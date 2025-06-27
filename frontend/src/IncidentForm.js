@@ -1,3 +1,4 @@
+// src/IncidentForm.js
 import React, { useState } from 'react';
 
 export default function IncidentForm() {
@@ -7,32 +8,33 @@ export default function IncidentForm() {
   const [type, setType]               = useState('');
   const [description, setDescription] = useState('');
   const [reporter, setReporter]       = useState('');
-  const [status, setStatus]           = useState('idle'); // idle, sending, success, error
+  const [status, setStatus]           = useState('idle'); // 'idle', 'sending', 'success', 'error'
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus('sending');
-
-    // Build the payload
-    const payload = {
-      childName,
-      childId,
-      date,
-      type,
-      description,
-      reporter
-    };
+    // Build FormData for Formspree
+    const form = e.target;
+    const formData = new FormData(form);
+    // Debug: log payload
+    console.log('💥 Sending payload:', Array.from(formData.entries()));
 
     try {
       const response = await fetch('https://formspree.io/f/meokvgjq', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        headers: { 'Accept': 'application/json' },
+        body: formData
       });
-      if (!response.ok) throw new Error(response.statusText);
-      setStatus('success');
+      console.log('💥 Response status:', response.status);
+      const result = await response.json();
+      console.log('💥 Response JSON:', result);
+      if (response.ok) {
+        setStatus('success');
+      } else {
+        throw new Error(result.error || 'Submission failed');
+      }
     } catch (err) {
-      console.error(err);
+      console.error('Form submission error:', err);
       setStatus('error');
     }
   };
@@ -42,7 +44,7 @@ export default function IncidentForm() {
       <div style={{ padding: '2rem', fontFamily: 'sans-serif', textAlign: 'center' }}>
         <h1>🙏 Thank You!</h1>
         <p>Your incident report has been submitted.</p>
-        <button onClick={() => setStatus('idle')}>Submit Another</button>
+        <button onClick={() => window.location.reload()}>Submit Another</button>
       </div>
     );
   }
@@ -50,35 +52,44 @@ export default function IncidentForm() {
   return (
     <div style={{ padding: '2rem', fontFamily: 'sans-serif', background: '#f7f7f7', minHeight: '100vh' }}>
       <h1 style={{ textAlign: 'center' }}>📝 Critical Incident Report</h1>
-      <form onSubmit={handleSubmit} style={{ maxWidth: 600, margin: 'auto', display:'grid', gap:'1rem', background:'#fff', padding:'2rem', borderRadius:8 }}>
+      <form onSubmit={handleSubmit} name="incident-report" data-netlify="true" style={{ maxWidth: 600, margin: 'auto', display:'grid', gap:'1rem', background:'#fff', padding:'2rem', borderRadius:8 }}>
+        {/* Formspree requires the form-name hidden input */}
+        <input type="hidden" name="form-name" value="incident-report" />
+
         <label>
           Child Name:
-          <input name="childName" value={childName} onChange={e=>setChildName(e.target.value)} required />
+          <input name="childName" value={childName} onChange={e => setChildName(e.target.value)} required />
         </label>
+
         <label>
           Child ID:
-          <input name="childId" value={childId} onChange={e=>setChildId(e.target.value)} required />
+          <input name="childId" value={childId} onChange={e => setChildId(e.target.value)} required />
         </label>
+
         <label>
           Date &amp; Time:
-          <input type="datetime-local" name="date" value={date} onChange={e=>setDate(e.target.value)} required />
+          <input type="datetime-local" name="date" value={date} onChange={e => setDate(e.target.value)} required />
         </label>
+
         <label>
           Incident Type:
-          <input name="type" value={type} onChange={e=>setType(e.target.value)} required placeholder="e.g. Serious injury/illness" />
+          <input name="type" placeholder="e.g. Serious injury/illness" value={type} onChange={e => setType(e.target.value)} required />
         </label>
+
         <label>
           Description:
-          <textarea name="description" rows="5" value={description} onChange={e=>setDescription(e.target.value)} required />
+          <textarea name="description" rows="5" value={description} onChange={e => setDescription(e.target.value)} required />
         </label>
+
         <label>
           Reporter Name/Email:
-          <input name="reporter" value={reporter} onChange={e=>setReporter(e.target.value)} required />
+          <input name="reporter" value={reporter} onChange={e => setReporter(e.target.value)} required />
         </label>
-        <button type="submit" disabled={status==='sending'} style={{ padding:'0.75rem', background:'#0052cc', color:'#fff', border:'none', borderRadius:4, cursor:'pointer' }}>
+
+        <button type="submit" style={{ padding:'0.75rem', background:'#0052cc', color:'#fff', border:'none', borderRadius:4, cursor:'pointer' }} disabled={status==='sending'}>
           {status==='sending' ? 'Sending…' : 'Submit Report'}
         </button>
-        {status==='error' && <p style={{color:'red'}}>Submission failed. Please try again.</p>}
+        {status==='error' && <p style={{ color:'red' }}>Submission failed. Please try again.</p>}
       </form>
     </div>
   );
