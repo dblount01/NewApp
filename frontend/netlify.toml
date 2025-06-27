@@ -1,0 +1,6 @@
+[build]
+  # Run npm install and build inside the frontend folder
+  command = "cd frontend && npm install && npm run build"
+  # Publish the contents of the build output
+  publish = "frontend/build"
+
