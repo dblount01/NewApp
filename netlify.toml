@@ -1,0 +1,9 @@
+[build]
+  # Tell Netlify to run inside the frontend folder
+  base = "frontend"
+  # How to build
+  command = "npm install && npm run build"
+  # What to publish (relative to repo root)
+  publish = "frontend/build"
+
+
