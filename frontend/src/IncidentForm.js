@@ -24,7 +24,7 @@ export default function IncidentForm() {
     };
 
     try {
-      const response = await fetch('https://formspree.io/f/yourFormID', {
+      const response = await fetch('https://formspree.io/f/meokvgjq', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
