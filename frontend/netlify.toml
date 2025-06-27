@@ -1,8 +1,16 @@
 [build]
-  # We're already in frontend/, so just install & build
+  # Build from the frontend folder
+  base    = "frontend"
   command = "npm install && npm run build"
-  # After building, publish the `build` folder at the site root
-  publish = "build"
+  publish = "frontend/build"
+
+# Redirect all paths (including form POSTs) to index.html so your SPA never 404s
+[[redirects]]
+  from     = "/*"
+  to       = "/index.html"
+  status   = 200
+  force    = true
+
 
 
 
